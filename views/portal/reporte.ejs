@@ -1,0 +1,86 @@
+<%- include('../plantillas/header') %>
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+  <h1 class="h3 mb-0">Reporte de compras</h1>
+</div>
+
+<!-- Selector de periodo (no se imprime) -->
+<form class="card card-body shadow-sm mb-4 d-print-none" action="/portal/reporte" method="GET">
+  <div class="row g-3 align-items-end">
+    <div class="col-sm-4">
+      <label class="form-label" for="desde">Fecha inicial</label>
+      <input type="date" class="form-control" id="desde" name="desde" value="<%= desde %>" required>
+    </div>
+    <div class="col-sm-4">
+      <label class="form-label" for="hasta">Fecha final</label>
+      <input type="date" class="form-control" id="hasta" name="hasta" value="<%= hasta %>" required>
+    </div>
+    <div class="col-sm-4 d-flex gap-2">
+      <button class="btn btn-primary" type="submit">Generar reporte</button>
+      <a class="btn btn-outline-secondary" href="/portal/reporte">Limpiar</a>
+    </div>
+  </div>
+</form>
+
+<% if (error) { %><div class="alert alert-danger d-print-none"><%= error %></div><% } %>
+
+<% if (!hayRango && !error) { %>
+<div class="alert alert-info d-print-none">Elige un periodo de fechas para generar tu reporte de compras.</div>
+<% } %>
+
+<% if (hayRango) { %>
+<!-- Encabezado del reporte (visible también al imprimir) -->
+<div class="d-flex flex-wrap justify-content-between align-items-start mb-3 gap-2">
+  <div>
+    <p class="mb-0"><strong><%= comprador.nombre %> <%= comprador.apellido_paterno %> <%= comprador.apellido_materno || '' %></strong></p>
+    <p class="mb-0 text-muted small"><%= comprador.correo %></p>
+    <p class="mb-0 text-muted">
+      <% if (desde === hasta) { %>Fecha: <strong><%= desde %></strong>
+      <% } else { %>Periodo: <strong><%= desde %></strong> al <strong><%= hasta %></strong><% } %>
+    </p>
+    <p class="mb-0 text-muted small">Generado el <%= generado %></p>
+  </div>
+  <div class="d-flex gap-2 d-print-none">
+    <button class="btn btn-primary" type="button" onclick="window.print()">Imprimir / Guardar PDF</button>
+    <a class="btn btn-outline-success" href="/portal/reporte.csv?desde=<%= desde %>&hasta=<%= hasta %>">Descargar CSV</a>
+  </div>
+</div>
+
+<div class="resumen mb-4">
+  <div><small>Compras</small><strong><%= compras.length %></strong></div>
+  <div><small>Kilos comprados</small><strong><%= totalKilos.toFixed(2) %></strong></div>
+  <div><small>Importe total</small><strong><%= dinero(totalImporte) %></strong></div>
+</div>
+
+<% if (!compras.length) { %>
+<div class="alert alert-info">No hiciste compras en este periodo.</div>
+<% } else { %>
+<div class="table-responsive">
+<table class="table table-striped align-middle bg-white shadow-sm">
+  <thead class="table-light">
+    <tr><th>Compra</th><th>Fecha</th><th>Especies</th><th>Kilos</th><th>Precio/kg</th><th class="text-end">Total</th></tr>
+  </thead>
+  <tbody>
+  <% compras.forEach(c => { %>
+    <tr>
+      <td>#<%= c.id_cmp %></td>
+      <td><%= aVista(c.fecha) %></td>
+      <td><%= c.lote.especies.map(e => e.nombre).join(', ') %></td>
+      <td><%= c.lote.kilos %></td>
+      <td><%= dinero(c.precio_kilo_final) %></td>
+      <td class="text-end"><%= dinero(c.precio_total) %></td>
+    </tr>
+  <% }) %>
+  </tbody>
+  <tfoot>
+    <tr class="fw-bold">
+      <td colspan="3">Total del periodo</td>
+      <td><%= totalKilos.toFixed(2) %></td>
+      <td></td>
+      <td class="text-end"><%= dinero(totalImporte) %></td>
+    </tr>
+  </tfoot>
+</table>
+</div>
+<% } %>
+<% } %>
+<%- include('../plantillas/footer') %>

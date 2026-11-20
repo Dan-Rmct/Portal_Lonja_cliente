@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= locals.titulo ? titulo + ' | ' : '' %>Lonja Veracruz</title>
+  <%- include('estilos') %>
+</head>
+<body class="bg-light">
+<nav class="navbar navbar-expand-lg navbar-dark navbar-lonja">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/portal/comprar"><%- include('logo') %>Lonja Veracruz</a>
+    <% if (locals.usuario) { %>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu" aria-controls="menu" aria-expanded="false" aria-label="Menú">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="menu">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item"><a class="nav-link" href="/portal/comprar">Comprar</a></li>
+        <li class="nav-item"><a class="nav-link" href="/portal/historial">Historial de compras</a></li>
+        <li class="nav-item"><a class="nav-link" href="/portal/reporte">Reporte</a></li>
+        <li class="nav-item"><a class="nav-link" href="/portal/perfil">Mis datos</a></li>
+      </ul>
+      <span class="navbar-text me-3"><%= usuario.nombre %></span>
+      <a class="btn btn-outline-light btn-sm" href="/cerrarsesion">Cerrar sesión</a>
+    </div>
+    <% } %>
+  </div>
+</nav>
+<main class="container py-4">

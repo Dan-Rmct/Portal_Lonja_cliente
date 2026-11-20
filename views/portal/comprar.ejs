@@ -1,0 +1,101 @@
+<%- include('../plantillas/header') %>
+<h1 class="h3 mb-1">Comprar</h1>
+<p class="text-muted">Lotes disponibles en el catálogo activo. Pagas el precio por kilo de salida.</p>
+<% if (mensaje) { %><div class="alert alert-success"><%= mensaje %></div><% } %>
+<% if (error) { %><div class="alert alert-danger"><%= error %></div><% } %>
+<% if (!lotes.length) { %><div class="alert alert-info">No hay lotes disponibles por ahora.</div><% } %>
+<div class="row g-3">
+<% lotes.forEach(l => { const total = Number(l.kilos) * Number(l.precio_kilo_salida); %>
+  <div class="col-md-6 col-lg-4">
+    <div class="card h-100 shadow-sm">
+      <div class="card-body">
+        <h2 class="h5">Lote #<%= l.id_lte %></h2>
+        <p class="mb-2 small text-muted">
+          <%= l.kilos %> kg · <%= l.numero_cajas %> cajas · <%= dinero(l.precio_kilo_salida) %>/kg
+        </p>
+        <% if (!l.especies.length) { %><p class="text-muted mb-0">Sin especies registradas</p><% } %>
+        <% l.especies.forEach(e => { %>
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <% if (e.imagen) { %><img src="<%= imgUrl(e.imagen) %>" height="40" width="40" class="rounded object-fit-cover" alt=""><% } %>
+            <div><%= e.nombre %> <span class="text-muted small">(<%= e.tipo?.nombre %>)</span></div>
+          </div>
+        <% }) %>
+      </div>
+      <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+        <strong><%= dinero(total) %></strong>
+        <!-- Abre el modal de confirmación (ya no se usa confirm() del navegador) -->
+        <button type="button" class="btn btn-primary btn-sm btn-comprar"
+                data-bs-toggle="modal" data-bs-target="#modalCompra"
+                data-id="<%= l.id_lte %>"
+                data-kilos="<%= l.kilos %>"
+                data-cajas="<%= l.numero_cajas %>"
+                data-precio="<%= dinero(l.precio_kilo_salida) %>"
+                data-total="<%= dinero(total) %>"
+                data-especies="<%= l.especies.map(e => e.nombre).join(', ') %>">
+          Comprar
+        </button>
+      </div>
+    </div>
+  </div>
+<% }) %>
+</div>
+
+<!-- Modal de confirmación de compra -->
+<div class="modal fade modal-compra" id="modalCompra" tabindex="-1" aria-labelledby="modalCompraTitulo" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title h5" id="modalCompraTitulo">Confirmar compra</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted mb-3">Revisa los datos antes de confirmar. Esta acción registra la compra a tu nombre.</p>
+        <dl class="compra-detalle mb-3">
+          <div><dt>Lote</dt><dd id="mcLote"></dd></div>
+          <div><dt>Especies</dt><dd id="mcEspecies"></dd></div>
+          <div><dt>Cantidad</dt><dd id="mcCantidad"></dd></div>
+          <div><dt>Precio por kilo</dt><dd id="mcPrecio"></dd></div>
+        </dl>
+        <div class="compra-total">
+          <span>Total a pagar</span>
+          <strong id="mcTotal"></strong>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <form id="formCompra" method="POST" class="d-inline">
+          <button type="submit" class="btn btn-primary" id="mcConfirmar">Confirmar compra</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Se ejecuta al terminar de cargar la página (Bootstrap se carga en el footer)
+  document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('modalCompra');
+    const form = document.getElementById('formCompra');
+    const boton = document.getElementById('mcConfirmar');
+
+    // Rellena el modal con los datos del lote que se pulsó
+    modal.addEventListener('show.bs.modal', (ev) => {
+      const d = ev.relatedTarget.dataset;
+      form.action = '/portal/comprar/' + d.id;
+      boton.disabled = false;
+      boton.textContent = 'Confirmar compra';
+      document.getElementById('mcLote').textContent = '#' + d.id;
+      document.getElementById('mcEspecies').textContent = d.especies || 'Sin especies registradas';
+      document.getElementById('mcCantidad').textContent = d.kilos + ' kg · ' + d.cajas + ' cajas';
+      document.getElementById('mcPrecio').textContent = d.precio + '/kg';
+      document.getElementById('mcTotal').textContent = d.total;
+    });
+
+    // Evita doble clic mientras se procesa la compra
+    form.addEventListener('submit', () => {
+      boton.disabled = true;
+      boton.textContent = 'Procesando…';
+    });
+  });
+</script>
+<%- include('../plantillas/footer') %>
