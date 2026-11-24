@@ -1,9 +1,14 @@
 // URL base de la API (sin /api al final), por ejemplo http://localhost:2800
 const BASE = (process.env.API_URL || 'http://localhost:2800').replace(/\/$/, '');
 
-// Convierte una ruta de imagen de la API ("/uploads/x.jpg") en una URL que el navegador pueda abrir
-export const urlPublica = (ruta) => (ruta ? BASE + ruta : '');
+/// URL que usa el NAVEGADOR para ver las imágenes (puede ser distinta de API_URL)
+const PUBLICA = (process.env.API_PUBLIC_URL || BASE).replace(/\/$/, '');
 
+export const urlPublica = (ruta) => {
+  if (!ruta) return '';
+  if (/^https?:\/\//i.test(ruta)) return ruta;           // ya es una URL completa
+  return PUBLICA + (ruta.startsWith('/') ? ruta : '/' + ruta);
+};
 // Llama a la API y devuelve siempre { ok, status, data }.
 // Lanza un error si la API no responde o si responde 5xx (lo atrapa el manejador de errores de Express).
 export async function api(ruta, { method = 'GET', token, body, query } = {}) {

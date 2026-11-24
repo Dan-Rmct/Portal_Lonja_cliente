@@ -16,7 +16,13 @@
         <% if (!l.especies.length) { %><p class="text-muted mb-0">Sin especies registradas</p><% } %>
         <% l.especies.forEach(e => { %>
           <div class="d-flex align-items-center gap-2 mb-2">
-            <% if (e.imagen) { %><img src="<%= imgUrl(e.imagen) %>" height="40" width="40" class="rounded object-fit-cover" alt=""><% } %>
+            <% if (e.imagen) { %>
+                <img src="<%= imgUrl(e.imagen) %>" height="48" width="48" loading="lazy"
+                    class="rounded object-fit-cover" alt="<%= e.nombre %>"
+                    onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'badge text-bg-secondary',textContent:'foto no encontrada'}))">
+              <% } else { %>
+                <span class="badge text-bg-secondary">sin foto</span>
+              <% } %>
             <div><%= e.nombre %> <span class="text-muted small">(<%= e.tipo?.nombre %>)</span></div>
           </div>
         <% }) %>
